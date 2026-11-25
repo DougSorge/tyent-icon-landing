@@ -1,0 +1,17 @@
+# Build output
+share/
+
+# Scraped Tyent product images (not ours to redistribute)
+reference/
+
+# Higgsfield job metadata and unused source stills
+assets/*_job.json
+assets/hero_render.png
+assets/hero_916.png
+
+# Local Claude settings
+.claude/settings.local.json
+
+# OS
+Thumbs.db
+.DS_Store

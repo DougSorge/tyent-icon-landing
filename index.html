@@ -1,0 +1,1150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tyent ICON — Inside the Fusion</title>
+<meta name="description" content="Scroll through the Tyent ICON hybrid hydrogen water ionizer, from touchscreen to dual-cell core." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Wix+Madefor+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #eef3ff;
+    --ink-dim: #c2cce0;
+    --ink-faint: #5d6a85;
+    --bg: #03050b;
+    --brand: #003dd6;
+    --brand-hi: #2f6bff;
+    --cyan: #4fd1ff;
+    --violet: #8a5cff;
+    --orange: #ff9a4a;
+    --card: rgba(10, 16, 32, 0.56);
+    --line: rgba(140, 180, 255, 0.16);
+    --unit: 120vh;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--bg); scrollbar-width: thin; scrollbar-color: #1d2a48 transparent; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Wix Madefor Display", system-ui, sans-serif;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  #stage { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; z-index: 0; }
+  #poster {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: #03050b url("assets/bg.png") center/cover no-repeat;
+    transition: opacity 1.2s ease;
+  }
+  #poster.gone { opacity: 0; }
+  #poster .loader {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    font-size: 12px; letter-spacing: .3em; text-transform: uppercase; color: var(--ink-dim);
+  }
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  body { touch-action: none; }
+
+  /* Nav */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px clamp(16px, 4vw, 48px);
+    background: linear-gradient(to bottom, rgba(3,5,11,.7), rgba(3,5,11,0));
+  }
+  .wordmark { font-weight: 800; letter-spacing: .14em; font-size: 20px; color: #fff; text-decoration: none; position: relative; }
+  .wordmark::before {
+    content: ""; position: absolute; left: 6px; right: 18px; top: -7px; height: 8px;
+    border-top: 1.5px solid rgba(255,255,255,.75); border-radius: 50% 50% 0 0;
+  }
+  .nav-links { display: flex; gap: 28px; font-size: 14px; color: var(--ink-dim); }
+  .nav-links a { color: inherit; text-decoration: none; }
+  .nav-links a:hover { color: #fff; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--brand); color: #fff; text-decoration: none;
+    padding: 12px 22px; border-radius: 999px; font-size: 15px; font-weight: 600;
+    box-shadow: 0 8px 30px rgba(0, 61, 214, .45), inset 0 1px 0 rgba(255,255,255,.18);
+    transition: background .2s, transform .2s; pointer-events: auto;
+  }
+  .btn:hover { background: var(--brand-hi); transform: translateY(-1px); }
+  .btn.ghost { background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px var(--line); }
+  @media (max-width: 760px) { .nav-links { display: none; } nav .btn { padding: 9px 16px; font-size: 13px; } }
+
+  /* Progress */
+  #progress { position: fixed; top: 0; left: 0; height: 2px; width: 0; z-index: 11;
+    background: linear-gradient(90deg, var(--brand), var(--cyan)); box-shadow: 0 0 12px var(--cyan); }
+
+  /* Rail */
+  #rail { position: fixed; right: clamp(14px, 2.4vw, 36px); top: 50%; transform: translateY(-50%); z-index: 9;
+    display: flex; flex-direction: column; gap: 14px; }
+  #rail button {
+    all: unset; cursor: pointer; display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint);
+  }
+  #rail button span { opacity: 0; transform: translateX(6px); transition: .3s; white-space: nowrap; }
+  #rail button i { width: 7px; height: 7px; border-radius: 50%; background: #2a3550; transition: .3s; }
+  #rail button:hover span, #rail button.on span { opacity: 1; transform: none; }
+  #rail button.on { color: #fff; }
+  #rail button.on i { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); transform: scale(1.3); }
+  @media (max-width: 760px) { #rail { display: none; } }
+
+  /* Cards */
+  .card {
+    position: fixed; z-index: 5; left: clamp(16px, 6vw, 96px); top: 50%;
+    width: min(440px, 36vw);
+    transform: translateY(-50%); opacity: 0; pointer-events: none;
+    will-change: opacity, transform;
+  }
+  .card.live { pointer-events: auto; }
+  /* legibility over the bright light streaks */
+  .card { text-shadow: 0 1px 2px rgba(0,0,0,.7), 0 2px 18px rgba(3,5,11,.9); }
+  .card h1 em, .card h2 em, .card .btn, .card .chip, .card .save { text-shadow: none; }
+  .eyebrow b { color: #8d9bb8; }
+  #scrim { position: fixed; inset: 0; z-index: 3; pointer-events: none;
+    background: linear-gradient(90deg, rgba(3,5,11,.82) 0%, rgba(3,5,11,.6) 28%, rgba(3,5,11,.18) 46%, rgba(3,5,11,0) 58%); }
+  @media (max-width: 760px) { #scrim { display: none; } .card { text-shadow: none; } }
+  .eyebrow { display: inline-flex; align-items: center; gap: 10px; font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--cyan); margin-bottom: 18px; }
+  .eyebrow b { font-weight: 700; color: var(--ink-faint); }
+  .card h2 { font-size: clamp(30px, 3.4vw, 50px); line-height: 1.04; font-weight: 700; letter-spacing: -.02em; margin-bottom: 18px; text-wrap: balance; }
+  .card h1 { font-size: clamp(42px, 5.4vw, 84px); line-height: .98; font-weight: 800; letter-spacing: -.035em; margin-bottom: 22px; }
+  .card h1 em, .card h2 em { font-style: normal; background: linear-gradient(100deg, #fff 10%, var(--cyan) 60%, var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .card p { color: var(--ink-dim); font-size: 16px; line-height: 1.6; max-width: 40ch; }
+  .card ul { list-style: none; margin-top: 20px; display: grid; gap: 10px; }
+  .card li { position: relative; padding-left: 18px; font-size: 14.5px; line-height: 1.45; color: #c9d4ea; }
+  .card li b { color: #fff; font-weight: 600; }
+  .card li::before { content: ""; position: absolute; left: 0; top: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+  .stats { display: flex; gap: 0; margin-top: 26px; border-top: 1px solid var(--line); padding-top: 18px; }
+  .stat { flex: 1; padding-right: 14px; }
+  .stat + .stat { padding-left: 16px; border-left: 1px solid var(--line); }
+  .stat strong { display: block; font-size: clamp(20px, 1.9vw, 28px); font-weight: 700; letter-spacing: -.01em; color: #fff; font-variant-numeric: tabular-nums; }
+  .stat small { font-size: 11.5px; color: rgba(236,242,255,.86); letter-spacing: .06em; text-transform: uppercase; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .chip { font-size: 12.5px; padding: 7px 12px; border-radius: 999px; background: rgba(79,209,255,.07); box-shadow: inset 0 0 0 1px var(--line); color: #cfe6ff; }
+  .chip.alk { color: #cbb8ff; } .chip.h2 { color: #8fe4ff; } .chip.pur { color: #9ff0c0; } .chip.acd { color: #ffc893; } .chip.tur { color: #ff9c9c; }
+  .price { display: flex; align-items: baseline; gap: 14px; margin: 8px 0 6px; }
+  .price strong { font-size: 44px; font-weight: 800; letter-spacing: -.02em; }
+  .price s { color: var(--ink-faint); font-size: 18px; }
+  .price .save { font-size: 12px; font-weight: 700; letter-spacing: .1em; color: #0b1020; background: var(--cyan); padding: 4px 9px; border-radius: 6px; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+  .promise { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 26px; }
+  .promise div { font-size: 12.5px; color: var(--ink-dim); padding: 12px; border-radius: 12px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); backdrop-filter: blur(8px); }
+  .promise b { display: block; color: #fff; font-size: 14px; margin-bottom: 2px; }
+  .note { font-size: 11px; color: #aab6cf; margin-top: 14px; }
+
+  .hint { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 6; font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--ink-dim); display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: auto; cursor: pointer; background: none; border: 0; font-family: inherit; }
+  .hint i { width: 1px; height: 36px; background: linear-gradient(var(--cyan), transparent); animation: drip 1.8s ease-in-out infinite; }
+  @keyframes drip { 0% { transform: scaleY(0); transform-origin: top; } 50% { transform: scaleY(1); transform-origin: top; } 51% { transform-origin: bottom; } 100% { transform: scaleY(0); transform-origin: bottom; } }
+
+  /* 3D-anchored labels */
+  #labels { position: fixed; inset: 0; z-index: 4; pointer-events: none; }
+  .tag { position: absolute; left: 0; top: 0; opacity: 0; display: flex; align-items: center; gap: 10px; white-space: nowrap; will-change: transform, opacity; }
+  .tag i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--cyan); box-shadow: 0 0 12px var(--cyan); flex: none; background: rgba(3,5,11,.6); }
+  .tag i::after { content: ""; display: block; width: 28px; height: 1px; background: linear-gradient(90deg, var(--cyan), transparent); margin: 2px 0 0 8px; }
+  .tag span { margin-left: 22px; font-size: 12.5px; font-weight: 600; letter-spacing: .02em; padding: 6px 11px; border-radius: 8px; background: rgba(6,12,26,.72); box-shadow: inset 0 0 0 1px var(--line); backdrop-filter: blur(6px); }
+  .tag span small { display: block; font-weight: 500; font-size: 11px; color: var(--ink-dim); }
+  .tag.left { flex-direction: row-reverse; transform-origin: right center; }
+  .tag.left i::after { margin: 2px 0 0 -26px; background: linear-gradient(270deg, var(--cyan), transparent); }
+  .tag.left span { margin: 0 22px 0 0; }
+  .tag.acid i { border-color: var(--orange); box-shadow: 0 0 12px var(--orange); }
+  .tag.acid i::after { background: linear-gradient(90deg, var(--orange), transparent); }
+
+  /* Peek-sheet toggle: phones only */
+  .more, .m-cue { display: none; }
+  @media (max-width: 760px) {
+    .card { left: 0; right: 0; bottom: 0; top: auto; width: auto; transform: none;
+      padding: 22px 20px calc(18px + env(safe-area-inset-bottom));
+      border-radius: 22px 22px 0 0; background: rgba(5,9,20,.86); backdrop-filter: blur(16px);
+      box-shadow: inset 0 1px 0 var(--line), 0 -12px 40px rgba(0,0,0,.45); cursor: pointer; }
+    .card::before { content: ""; position: absolute; top: 8px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 2px; background: rgba(255,255,255,.2); }
+    .card.open { max-height: 72vh; overflow-y: auto; cursor: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+    /* collapsed: label + headline only (plus anything marked m-keep) */
+    .card:not(.open) > :not(.eyebrow):not(h1):not(h2):not(.more):not(.m-keep) { display: none; }
+    .card h1 { font-size: 30px; margin-bottom: 0; } .card h2 { font-size: 23px; margin-bottom: 0; }
+    .card.open h1, .card.open h2 { margin-bottom: 12px; }
+    .card p { font-size: 14px; } .card ul { margin-top: 12px; gap: 6px; } .card li { font-size: 13.5px; }
+    .stats { margin-top: 14px; padding-top: 12px; } .stat strong { font-size: 19px; }
+    .eyebrow { margin-bottom: 8px; font-size: 11px; }
+    .more { all: unset; position: absolute; top: 18px; right: 16px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+      font-size: 12px; font-weight: 600; letter-spacing: .04em; color: #dbe6ff; padding: 6px 12px; border-radius: 999px; background: rgba(79,209,255,.1); box-shadow: inset 0 0 0 1px var(--line); }
+    .more i { width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-top: 1.5px solid currentColor; transform: translateY(2px) rotate(-45deg); transition: transform .25s; }
+    .card.open .more i { transform: translateY(-2px) rotate(135deg); }
+    .more:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+    .m-cue { display: block; margin-top: 10px; font-size: 12px !important; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint) !important; }
+    .card:not(.open) .price { margin: 12px 0 0; } .card:not(.open) .cta-row { margin-top: 12px; }
+    .promise { grid-template-columns: 1fr 1fr 1fr; } .promise div { padding: 8px; font-size: 11px; }
+    .price strong { font-size: 34px; }
+    .tag span { font-size: 11px; padding: 4px 8px; }
+    .hint { display: none; }
+  }
+  /* Intro film */
+  html.lock, html.lock body { overflow: hidden; }
+  #intro { position: fixed; inset: 0; z-index: 8; background: #03050b; transition: opacity 1.1s ease, transform 1.6s cubic-bezier(.2,.7,.2,1); }
+  #intro.done { opacity: 0; transform: scale(1.05); pointer-events: none; }
+  #intro video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  #intro::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(3,5,11,.75)), linear-gradient(to top, rgba(3,5,11,.85), transparent 35%); }
+  .intro-copy { position: absolute; z-index: 1; left: clamp(16px, 6vw, 96px); bottom: clamp(70px, 12vh, 130px); opacity: 0; transform: translateY(16px); animation: introIn 1.2s 1.4s cubic-bezier(.2,.7,.2,1) forwards; }
+  .intro-copy small { display: block; font-size: 12px; letter-spacing: .32em; text-transform: uppercase; color: var(--cyan); margin-bottom: 10px; }
+  .intro-copy strong { display: block; font-size: clamp(56px, 9vw, 140px); line-height: .9; font-weight: 800; letter-spacing: -.04em; }
+  .intro-copy span { display: block; margin-top: 12px; color: var(--ink-dim); font-size: clamp(14px, 1.3vw, 18px); }
+  @keyframes introIn { to { opacity: 1; transform: none; } }
+  .intro-skip { all: unset; position: absolute; z-index: 2; right: clamp(16px, 4vw, 48px); bottom: clamp(70px, 12vh, 130px); cursor: pointer;
+    font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--ink); padding: 11px 18px; border-radius: 999px;
+    background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 1px var(--line); backdrop-filter: blur(8px); }
+  .intro-skip:hover { background: rgba(255,255,255,.12); }
+  .intro-skip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+  .intro-bar { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(255,255,255,.08); }
+  .intro-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--brand), var(--cyan)); transform-origin: left; transform: scaleX(0); }
+  @media (max-width: 760px) { .intro-copy { bottom: 120px; } .intro-skip { bottom: 40px; left: 16px; right: auto; } }
+  @media (prefers-reduced-motion: reduce) { .hint i { animation: none; } }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<canvas id="stage" aria-hidden="true"></canvas>
+<div id="poster"><div class="loader">Loading ICON</div></div>
+<div id="progress"></div>
+<div id="intro" aria-label="ICON intro film">
+  <video id="introVideo" muted playsinline preload="auto"></video>
+  <div class="intro-copy"><small>Introducing · Fusion Series</small><strong>ICON</strong><span>The all-new hydrogen powerhouse.</span></div>
+  <button class="intro-skip" id="introSkip">Skip intro ↓</button>
+  <div class="intro-bar"><i id="introBar"></i></div>
+</div>
+
+<nav>
+  <a class="wordmark" href="https://www.tyentusa.com/">TYENT</a>
+  <div class="nav-links">
+    <a href="https://www.tyentusa.com/collections/hydrogen-water-machines">Hydrogen</a>
+    <a href="https://www.tyentusa.com/pages/ionizers">Ionizers</a>
+    <a href="https://www.tyentusa.com/pages/fusion-series">Fusion Series</a>
+    <a href="https://www.tyentusa.com/pages/reviews">Reviews</a>
+  </div>
+  <a class="btn" href="https://www.tyentusa.com/products/icon">Shop ICON</a>
+</nav>
+
+<div id="scrim"></div>
+<div id="rail"></div>
+<div id="labels"></div>
+
+<!-- Phase cards -->
+<section class="card" data-phase="0" data-name="ICON">
+  <div class="eyebrow">Fusion Series <b>·</b> 2027</div>
+  <h1>Hydrogen, alkaline,<br><em>or both.</em></h1>
+  <p>ICON pairs a dedicated hydrogen cell with an ionizing cell in one countertop machine. Scroll to see how it works.</p>
+  <p class="m-cue m-keep">Swipe up to explore ↑</p>
+  <div class="stats">
+    <div class="stat"><strong>1.9+ ppm</strong><small>Molecular H₂</small></div>
+    <div class="stat"><strong>1.7–12.5</strong><small>pH range</small></div>
+    <div class="stat"><strong>−1150</strong><small>ORP mV</small></div>
+  </div>
+</section>
+
+<section class="card" data-phase="1" data-name="Control">
+  <div class="eyebrow">01 <b>/</b> Control</div>
+  <h2>Choose your water <em>at a touch.</em></h2>
+  <p>Pick your water on the 4.3-inch color touchscreen, or turn the illuminated jog dial. Each mode has its own color, so you can see what you chose before it pours.</p>
+  <div class="chips">
+    <span class="chip alk">ALK 1 · 2 · 3</span><span class="chip h2">H₂</span><span class="chip pur">Purify</span><span class="chip acd">ACD 1 · 2</span><span class="chip tur">Turbo</span>
+  </div>
+  <ul>
+    <li>Dark and Classic screen layouts</li>
+    <li>Quantity presets for your usual glasses and bottles</li>
+  </ul>
+</section>
+
+<section class="card" data-phase="2" data-name="Inlet">
+  <div class="eyebrow">02 <b>/</b> Inlet</div>
+  <h2>It checks the water <em>before it starts.</em></h2>
+  <p>Tap water comes in through a diverter. Before every pour, ICON checks the supply and protects itself.</p>
+  <ul>
+    <li>Source-water sensing stops the flow when no supply is detected</li>
+    <li>A temperature sensor blocks hot water from reaching the cell</li>
+    <li>Leak detection and self-diagnosis run in the background</li>
+  </ul>
+</section>
+
+<section class="card" data-phase="3" data-name="Filtration">
+  <div class="eyebrow">03 <b>/</b> Filtration</div>
+  <h2>Two filters <em>before any electricity.</em></h2>
+  <p>Two Ultra Plus cartridges clean the water before it reaches the plates, and keep the minerals that help ionization.</p>
+  <ul>
+    <li><b>1st · Carbon:</b> chlorine, VOCs, odor and taste</li>
+    <li><b>2nd · UF membrane:</b> fine particles and bacteria</li>
+    <li>Reduces lead, pesticides and pharmaceutical residues</li>
+  </ul>
+  <div class="stats">
+    <div class="stat"><strong>200+</strong><small>Contaminants tested</small></div>
+    <div class="stat"><strong>2</strong><small>Front-load filters</small></div>
+  </div>
+</section>
+
+<section class="card" data-phase="4" data-name="Dual cell">
+  <div class="eyebrow">04 <b>/</b> Dual-cell core</div>
+  <h2>Two cells. <em>Independent control.</em></h2>
+  <p>In older ionizers, hydrogen only rose with the alkaline setting. Fusion separates the two jobs.</p>
+  <ul>
+    <li><b>Hydrogen Booster Cell:</b> generates molecular hydrogen without changing pH</li>
+    <li><b>Ionizing Cell:</b> sets the pH, from strong acidic to strong alkaline</li>
+    <li>Run either one, or both together for alkaline water with maximum hydrogen</li>
+  </ul>
+</section>
+
+<section class="card" data-phase="5" data-name="Electrolysis">
+  <div class="eyebrow">05 <b>/</b> Electrolysis</div>
+  <h2>Platinum on titanium, <em>current through water.</em></h2>
+  <p>Platinum-coated titanium mesh plates pass current through the water. A membrane splits the stream in two: the cathode side becomes alkaline and hydrogen-rich, and the acidic side drains away.</p>
+  <div class="stats">
+    <div class="stat"><strong>2 + 7</strong><small>Plates, H₂ + ion*</small></div>
+    <div class="stat"><strong>1.9+</strong><small>ppm H₂</small></div>
+    <div class="stat"><strong>−1150</strong><small>ORP mV</small></div>
+  </div>
+  <p class="note">*Ionizing cell has 4 plates as standard and 7 with Hydrogen Boost.</p>
+</section>
+
+<section class="card" data-phase="6" data-name="Dispense">
+  <div class="eyebrow">06 <b>/</b> Dispense</div>
+  <h2>Hands-free, <em>to the exact volume.</em></h2>
+  <p>Hold a glass up to the front sensor and ICON starts pouring. Set a volume and it stops on its own.</p>
+  <ul>
+    <li>Front proximity sensor for when your hands are wet or full</li>
+    <li>Preset volume with automatic shutoff</li>
+    <li>Adjustable stainless spout fits glasses and tall bottles</li>
+  </ul>
+</section>
+
+<section class="card" data-phase="7" data-name="Smart care">
+  <div class="eyebrow">07 <b>/</b> Smart care</div>
+  <h2>It looks after <em>itself.</em></h2>
+  <ul>
+    <li><b>Automatic cleaning</b> keeps the cell clean between pours</li>
+    <li><b>Guided descaling</b> tells you when deeper cleaning is due</li>
+    <li><b>Self-diagnosis</b> flags flow, filter and system issues</li>
+    <li><b>Turbo modes</b> make strong acidic and alkaline water for household cleaning (not for drinking)</li>
+    <li><b>Eco mode</b> cuts power use when idle</li>
+  </ul>
+</section>
+
+<section class="card" data-phase="8" data-name="Own it">
+  <div class="eyebrow">Tyent ICON <b>·</b> Fusion Series</div>
+  <h2>Better water <em>starts here.</em></h2>
+  <div class="price m-keep"><strong>$3,985</strong><s>$6,395</s><span class="save">SAVE $2,410</span></div>
+  <p>Hydrogen Boost and Ultra Filtration included. 0% financing available.</p>
+  <div class="cta-row m-keep">
+    <a class="btn" href="https://www.tyentusa.com/products/icon">Shop ICON</a>
+    <a class="btn ghost" href="https://www.tyentusa.com/pages/fusion-series">Compare with HALO</a>
+  </div>
+  <div class="promise">
+    <div><b>Lifetime</b>warranty</div>
+    <div><b>75-day</b>home trial</div>
+    <div><b>8,200+</b>reviews</div>
+  </div>
+  <p class="note">Black Friday pricing as listed on tyentusa.com, November 2026.</p>
+</section>
+
+<button class="hint" id="hint" aria-label="Next section">Scroll<i></i></button>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+/* ---------------------------------------------------------- intro film */
+const introEl = document.getElementById('intro'), introVid = document.getElementById('introVideo');
+let introActive = false, introEndedAt = -1e9;
+function onIntroIntent(e) {
+  if (e.type === 'keydown' && !['ArrowDown', 'PageDown', ' ', 'Enter', 'Escape', 'End'].includes(e.key)) return;
+  if (e.cancelable) e.preventDefault();
+  endIntro();
+}
+function endIntro() {
+  if (!introActive) return; introActive = false; introEndedAt = performance.now();
+  introEl.classList.add('done');
+  document.documentElement.classList.remove('lock');
+  ['wheel', 'touchmove', 'keydown'].forEach(ev => removeEventListener(ev, onIntroIntent));
+  setTimeout(() => { introVid.pause(); introEl.remove(); }, 1700);
+}
+// A refresh restarts the whole presentation; only a freshly opened #N link deep-links to a phase
+try {
+  const nav = performance.getEntriesByType('navigation')[0];
+  if (nav && nav.type === 'reload' && location.hash) history.replaceState(null, '', location.pathname + location.search);
+} catch {}
+if (!/^#[1-8]$/.test(location.hash) && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  introActive = true;
+  document.documentElement.classList.add('lock');
+  // Tall screens get the vertical cut; everything else the 16:9 film
+  introVid.src = matchMedia('(max-aspect-ratio: 4/5)').matches ? 'assets/intro_9x16.mp4' : 'assets/intro.mp4';
+  introVid.addEventListener('ended', endIntro);
+  introVid.addEventListener('error', endIntro);
+  const introBar = document.getElementById('introBar');
+  introVid.addEventListener('timeupdate', () => {
+    if (introVid.duration) introBar.style.transform = `scaleX(${introVid.currentTime / introVid.duration})`;
+  });
+  document.getElementById('introSkip').onclick = endIntro;
+  ['wheel', 'touchmove', 'keydown'].forEach(ev => addEventListener(ev, onIntroIntent, { passive: false }));
+  const pr = introVid.play(); if (pr) pr.catch(endIntro);
+  setTimeout(() => { if (introVid.readyState < 2) endIntro(); }, 7000); // slow network: don't hold the page hostage
+} else introEl.remove();
+
+/* ---------------------------------------------------------------- setup */
+const PHASES = 9;
+const canvas = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 400);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+// Higgsfield-generated backdrop, cover-fitted as screen-space background
+let bgTex = null, bgAspect = 16 / 9;
+new THREE.TextureLoader().load('assets/bg.png', t => {
+  t.colorSpace = THREE.SRGBColorSpace; bgTex = t; bgAspect = t.image.width / t.image.height;
+  scene.background = t; fitBackground();
+}, undefined, () => { scene.background = new THREE.Color(0x03050b); });
+function fitBackground() {
+  if (!bgTex) return;
+  const a = innerWidth / innerHeight;
+  if (a > bgAspect) { bgTex.repeat.set(1, bgAspect / a); bgTex.offset.set(0, (1 - bgAspect / a) / 2); }
+  else { bgTex.repeat.set(a / bgAspect, 1); bgTex.offset.set((1 - a / bgAspect) / 2, 0); }
+}
+
+// Lights
+scene.add(new THREE.AmbientLight(0x8aa0ff, 0.25));
+const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(18, 26, 30); scene.add(key);
+const rimC = new THREE.DirectionalLight(0x4fd1ff, 3.2); rimC.position.set(-30, 18, -18); scene.add(rimC);
+const rimB = new THREE.DirectionalLight(0x2a5bff, 0.9); rimB.position.set(26, 6, -24); scene.add(rimB);
+const fill = new THREE.DirectionalLight(0x9db7ff, 0.6); fill.position.set(-20, 4, 26); scene.add(fill);
+
+/* ---------------------------------------------------------- textures */
+function canvasTex(w, h, draw, srgb = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+const brushed = canvasTex(1024, 1024, (g, w, h) => {
+  g.fillStyle = '#7a7a7a'; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 9000; i++) {
+    const y = Math.random() * h, v = 90 + Math.random() * 90 | 0;
+    g.strokeStyle = `rgba(${v},${v},${v},${0.25 + Math.random() * 0.35})`;
+    g.lineWidth = Math.random() * 1.6;
+    g.beginPath(); const x = Math.random() * w; g.moveTo(x, y); g.lineTo(x + 80 + Math.random() * 500, y); g.stroke();
+  }
+}, false);
+brushed.wrapS = brushed.wrapT = THREE.RepeatWrapping;
+brushed.repeat.set(0.09, 0.07);
+
+const perforated = canvasTex(256, 512, (g, w, h) => {
+  g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#000';
+  for (let y = 20; y < h - 10; y += 26) for (let x = 18; x < w - 10; x += 26) {
+    if (Math.abs(x - w / 3) < 9 || Math.abs(x - 2 * w / 3) < 9) continue;
+    g.beginPath(); g.arc(x + ((y / 26) % 2) * 6, y, 6, 0, Math.PI * 2); g.fill();
+  }
+}, false);
+
+const dotSprite = canvasTex(64, 64, (g) => {
+  const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,.8)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+});
+
+const shadowTex = canvasTex(256, 256, (g) => {
+  const gr = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+  gr.addColorStop(0, 'rgba(0,0,0,.85)'); gr.addColorStop(0.55, 'rgba(0,0,0,.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+});
+
+const logoTex = canvasTex(1024, 360, (g, w, h) => {
+  g.fillStyle = '#e9ecf2';
+  g.font = '800 210px "Wix Madefor Display", Arial, sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+  if (g.letterSpacing !== undefined) g.letterSpacing = '6px';
+  g.fillText('TYENT', w / 2, h - 52);
+  g.strokeStyle = '#e9ecf2'; g.lineWidth = 7;
+  g.beginPath(); g.ellipse(w / 2 - 70, 140, 210, 70, 0, Math.PI * 1.08, Math.PI * 1.75); g.stroke();
+  g.lineWidth = 5; g.beginPath(); g.ellipse(w / 2 - 70, 160, 170, 60, 0, Math.PI * 1.1, Math.PI * 1.7); g.stroke();
+});
+const hybridTex = canvasTex(512, 220, (g, w, h) => {
+  g.fillStyle = '#23262c'; g.textAlign = 'right';
+  g.font = '600 120px "Wix Madefor Display", Arial, sans-serif'; g.fillText('hybrid', w - 16, 118);
+  g.font = '500 44px "Wix Madefor Display", Arial, sans-serif';
+  if (g.letterSpacing !== undefined) g.letterSpacing = '6px';
+  g.fillText('water ionizer', w - 16, 190);
+});
+function labelTex(num, word, color) {
+  return canvasTex(1024, 512, (g, w, h) => {
+    g.fillStyle = '#f3f4f6'; g.fillRect(0, 0, w, h);
+    g.fillStyle = color; g.fillRect(260, 40, 500, 430);
+    g.fillStyle = '#ffffff';
+    g.font = '800 300px "Wix Madefor Display", Arial'; g.textAlign = 'center'; g.fillText(num, 510, 330);
+    g.font = '700 54px "Wix Madefor Display", Arial'; g.fillText(word, 510, 420);
+    g.fillStyle = '#c7cbd3'; for (let i = 0; i < 6; i++) g.fillRect(320, 480 - i * 2, 380, 1);
+  });
+}
+
+/* --------------------------------------------------- screen (canvas UI) */
+const MODES = [
+  { id: 'ALK 3', color: '#8a5cff', water: 0x9a86ff },
+  { id: 'H2', color: '#29c6ff', water: 0x7fdcff },
+  { id: 'PURIFY', color: '#3fcf7e', water: 0xbff5ff },
+  { id: 'ACD 1', color: '#ff9a3d', water: 0xffd28f },
+  { id: 'TURBO', color: '#ff4d5a', water: 0xff9a9a },
+];
+const screenCanvas = document.createElement('canvas'); screenCanvas.width = 1024; screenCanvas.height = 640;
+const screenTex = new THREE.CanvasTexture(screenCanvas); screenTex.colorSpace = THREE.SRGBColorSpace; screenTex.anisotropy = 8;
+let screenMode = -1;
+function drawScreen(mi) {
+  if (mi === screenMode) return; screenMode = mi;
+  const g = screenCanvas.getContext('2d'), W = 1024, H = 640, active = MODES[mi].id;
+  g.fillStyle = '#0b0e15'; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#c9d2e3'; g.font = '500 30px "Wix Madefor Display", Arial';
+  for (let i = 0; i < 4; i++) { g.beginPath(); g.arc(46 + i * 50, 52, 15, 0, Math.PI * 2); g.lineWidth = 3; g.strokeStyle = '#9aa6bd'; g.stroke(); }
+  g.textAlign = 'right'; g.fillText('Descale  6%   |   Filter  26%', W - 30, 64);
+  const tiles = [['ALK 1', 'ALK 2', 'ALK 3', 'ACD 1'], ['PURIFY', 'H2', 'TURBO', 'ACD 2']];
+  const tc = { ALK: '#8fa2ff', ACD: '#ffb25e', PURIFY: '#6fe0a0', H2: '#4fd1ff', TURBO: '#ff6b6b' };
+  const x0 = 26, y0 = 104, tw = 180, th = 236, gap = 10;
+  tiles.forEach((row, r) => row.forEach((name, c) => {
+    const x = x0 + c * (tw + gap), y = y0 + r * (th + gap);
+    const on = name === active;
+    g.fillStyle = on ? MODES[mi].color : '#1b2130'; roundRect(g, x, y, tw, th, 14); g.fill();
+    const base = name.split(' ')[0];
+    // icon: glass for ALK/H2/PURIFY, sparkle ring for ACD, arrow for TURBO
+    g.strokeStyle = on ? '#fff' : (tc[base] || '#fff'); g.lineWidth = 6;
+    const cx = x + tw / 2, cy = y + 92;
+    if (base === 'TURBO') { g.beginPath(); g.moveTo(cx, cy + 50); g.lineTo(cx, cy - 40); g.moveTo(cx - 30, cy - 10); g.lineTo(cx, cy - 44); g.lineTo(cx + 30, cy - 10); g.stroke(); }
+    else if (base === 'ACD') { g.beginPath(); g.arc(cx - 10, cy, 34, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.arc(cx + 38, cy - 30, 8, 0, Math.PI * 2); g.stroke(); }
+    else { g.beginPath(); g.moveTo(cx - 34, cy - 48); g.lineTo(cx - 26, cy + 50); g.lineTo(cx + 26, cy + 50); g.lineTo(cx + 34, cy - 48); g.stroke();
+      g.font = '700 30px Arial'; g.textAlign = 'center'; g.fillStyle = g.strokeStyle; if (base !== 'PURIFY') g.fillText('H₂', cx, cy + 14); }
+    g.fillStyle = '#ffffff'; g.font = '700 34px "Wix Madefor Display", Arial'; g.textAlign = 'center';
+    g.fillText(name === 'H2' ? 'H₂' : name, cx, y + th - 30);
+  }));
+  g.textAlign = 'center'; g.fillStyle = '#9aa6bd'; g.font = '500 26px Arial'; g.fillText('AM', 905, 140);
+  g.fillStyle = '#fff'; g.font = '700 74px "Wix Madefor Display", Arial'; g.fillText('10:25', 905, 210);
+  [330, 460].forEach(y => { g.beginPath(); g.arc(905, y, 48, 0, Math.PI * 2); g.fillStyle = '#1b2130'; g.fill(); g.lineWidth = 4; g.strokeStyle = '#6c7a96'; g.stroke(); });
+  screenTex.needsUpdate = true;
+}
+function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+/* ---------------------------------------------------------- materials */
+const M = {
+  shell: new THREE.MeshPhysicalMaterial({ color: 0x0c0d11, roughness: 0.58, metalness: 0.15, clearcoat: 0.35, clearcoatRoughness: 0.5, envMapIntensity: 0.7 }),
+  inner: new THREE.MeshStandardMaterial({ color: 0x07080b, roughness: 0.9, side: THREE.DoubleSide }),
+  steel: new THREE.MeshPhysicalMaterial({ color: 0xc8ccd2, metalness: 1, roughness: 0.34, roughnessMap: brushed, anisotropy: 0.9, envMapIntensity: 1.25 }),
+  gloss: new THREE.MeshPhysicalMaterial({ color: 0x040405, roughness: 0.12, metalness: 0.2, clearcoat: 1, envMapIntensity: 1.1 }),
+  chrome: new THREE.MeshStandardMaterial({ color: 0xd9dde3, metalness: 1, roughness: 0.2, envMapIntensity: 0.85 }),
+  screen: new THREE.MeshBasicMaterial({ map: screenTex, toneMapped: false }),
+  dial: new THREE.MeshStandardMaterial({ color: 0x1a0a33, emissive: 0x9b6bff, emissiveIntensity: 2.6, roughness: 0.3 }),
+  logo: new THREE.MeshBasicMaterial({ map: logoTex, transparent: true, color: 0xdfe3ea }),
+  hybrid: new THREE.MeshBasicMaterial({ map: hybridTex, transparent: true }),
+  filter: new THREE.MeshPhysicalMaterial({ color: 0xc9ccd3, roughness: 0.6, clearcoat: 0.1, envMapIntensity: 0.35 }),
+  cap: new THREE.MeshStandardMaterial({ color: 0xb9bec7, roughness: 0.6, envMapIntensity: 0.35 }),
+  housing: new THREE.MeshPhysicalMaterial({ color: 0xcfc7aa, roughness: 0.6, clearcoat: 0.1, envMapIntensity: 0.4 }),
+  manifold: new THREE.MeshPhysicalMaterial({ color: 0xcfe2ff, roughness: 0.08, transmission: 0.6, thickness: 0.3, transparent: true, opacity: 0.9, envMapIntensity: 1.2 }),
+  oring: new THREE.MeshStandardMaterial({ color: 0x1f3dff, emissive: 0x1030ff, emissiveIntensity: 0.6, roughness: 0.3 }),
+  frame: new THREE.MeshStandardMaterial({ color: 0xcfccc4, roughness: 0.6, envMapIntensity: 0.4 }),
+  plate: new THREE.MeshStandardMaterial({ color: 0xdfe3ea, metalness: 1, roughness: 0.22, alphaMap: perforated, alphaTest: 0.5, side: THREE.DoubleSide, envMapIntensity: 1.5 }),
+  membrane: new THREE.MeshBasicMaterial({ color: 0x5fd0ff, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }),
+  psu: new THREE.MeshStandardMaterial({ color: 0x23272f, metalness: 0.7, roughness: 0.45 }),
+  pcb: new THREE.MeshStandardMaterial({ color: 0x0e3b2a, roughness: 0.6 }),
+  valve: new THREE.MeshStandardMaterial({ color: 0x2d3340, roughness: 0.5, metalness: 0.3 }),
+  glass: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.04, metalness: 0, transparent: true, opacity: 0.07, envMapIntensity: 0.6, depthWrite: false }),
+  glassRim: new THREE.MeshBasicMaterial({ color: 0xd8f0ff, transparent: true, opacity: 0.55, depthWrite: false }),
+  water: new THREE.MeshBasicMaterial({ color: 0x2a86d8, transparent: true, opacity: 0.3, depthWrite: false }),
+  waterTop: new THREE.MeshBasicMaterial({ color: 0x9fd8ff, transparent: true, opacity: 0.4, depthWrite: false, side: THREE.DoubleSide }),
+  stream: new THREE.MeshBasicMaterial({ color: 0xa8dcff, transparent: true, opacity: 0.55, depthWrite: false }),
+  shadow: new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }),
+};
+// Material groups for fading
+const EXTERIOR = [M.shell, M.inner, M.steel, M.gloss, M.chrome, M.screen, M.dial, M.logo, M.hybrid];
+const FILTERS = [M.filter, M.cap];
+const HOUSING = [M.housing, M.manifold, M.oring];
+const MISC = [M.psu, M.pcb, M.valve];
+const labelMats = [];
+function setOpacity(list, o) {
+  for (const m of list) {
+    const base = m.userData.base ?? (m.userData.base = m.opacity);
+    m.opacity = base * o;
+    const t = o < 0.995 || m.userData.alwaysT;
+    if (m.transparent !== t) { m.transparent = t; m.needsUpdate = true; }
+    m.depthWrite = !t || m.userData.forceDepth === true;
+    m.visible = o > 0.01;
+  }
+}
+[M.logo, M.hybrid, M.manifold, M.glass, M.glassRim, M.water, M.waterTop].forEach(m => (m.userData.alwaysT = true));
+
+/* ------------------------------------------------------------ helpers */
+function rrShape(w, h, r, cx = 0, cy = 0) {
+  const s = new THREE.Shape(), x = cx - w / 2, y = cy - h / 2;
+  s.moveTo(x + r, y); s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r);
+  s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r);
+  s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y); return s;
+}
+const mesh = (geo, mat, x = 0, y = 0, z = 0) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); return m; };
+
+/* ------------------------------------------------------------ the ICON */
+// Units: 1 = 1 inch. Body 11.5 W × 14.5 H × 6 D, floor at y = 0, front at z ≈ +3.
+const W = 11.5, H = 14.5;
+const root = new THREE.Group(); scene.add(root);
+const machine = new THREE.Group(); root.add(machine);
+
+const shadow = mesh(new THREE.PlaneGeometry(30, 16), M.shadow, -1, 0.01, 0); shadow.rotation.x = -Math.PI / 2; root.add(shadow);
+
+// Body: hollow shell (ring extrusion) + back plate
+const body = new THREE.Group(); machine.add(body);
+{
+  const outer = rrShape(W - 0.3, H - 0.3, 0.85);
+  outer.holes.push(rrShape(W - 1.0, H - 1.0, 0.55));
+  const g = new THREE.ExtrudeGeometry(outer, { depth: 5.0, bevelEnabled: true, bevelThickness: 0.15, bevelSize: 0.15, bevelSegments: 5, curveSegments: 28 });
+  body.add(mesh(g, M.shell, 0, H / 2, -2.85));
+  const back = new THREE.ExtrudeGeometry(rrShape(W - 0.3, H - 0.3, 0.85), { depth: 0.2, bevelEnabled: false, curveSegments: 28 });
+  body.add(mesh(back, M.shell, 0, H / 2, -3.0));
+  body.add(mesh(new THREE.PlaneGeometry(W - 1.1, H - 1.1), M.inner, 0, H / 2, -2.7));
+}
+
+// Door (whole front) hinged on the right edge
+const doorPivot = new THREE.Group(); doorPivot.position.set(W / 2, H / 2, 2.3); machine.add(doorPivot);
+const door = new THREE.Group(); door.position.set(-W / 2, 0, 0); doorPivot.add(door);
+{
+  const g = new THREE.ExtrudeGeometry(rrShape(W - 0.3, H - 0.3, 0.85), { depth: 0.42, bevelEnabled: true, bevelThickness: 0.15, bevelSize: 0.15, bevelSegments: 5, curveSegments: 28 });
+  door.add(mesh(g, M.shell, 0, 0, 0.15));
+}
+// face: front-coords group (x: −5.75..5.75, y: 0..14.5) sitting on the door's front surface
+const face = new THREE.Group(); face.position.set(0, -H / 2, 0.73); door.add(face);
+{
+  // Brushed stainless panel with the S-curve left edge
+  const L = -1.15, R = 5.3, T = 14.0, B = 0.55, r = 0.6;
+  const s = new THREE.Shape();
+  s.moveTo(L, T); s.lineTo(R - r, T); s.quadraticCurveTo(R, T, R, T - r);
+  s.lineTo(R, B + r); s.quadraticCurveTo(R, B, R - r, B);
+  s.lineTo(2.25, B);
+  s.bezierCurveTo(0.1, B + 0.35, L, 3.0, L, 7.6);
+  s.lineTo(L, T);
+  const g = new THREE.ExtrudeGeometry(s, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2, curveSegments: 40 });
+  face.add(mesh(g, M.steel, 0, 0, 0));
+  // Screen
+  const bezel = mesh(new RoundedBoxGeometry(4.5, 3.2, 0.2, 4, 0.22), M.gloss, 2.2, 10.0, 0.16); face.add(bezel);
+  const scr = mesh(new THREE.PlaneGeometry(3.95, 2.47), M.screen, 2.2, 10.0, 0.265); face.add(scr);
+  // Proximity sensor pill
+  face.add(mesh(new RoundedBoxGeometry(1.3, 0.5, 0.12, 4, 0.22), M.gloss, 2.25, 13.05, 0.12));
+  // Jog dial
+  const ring = mesh(new THREE.CylinderGeometry(1.08, 1.12, 0.42, 56), M.gloss, -2.85, 2.25, 0.05); ring.rotation.x = Math.PI / 2; face.add(ring);
+  const lens = mesh(new THREE.SphereGeometry(0.84, 48, 24, 0, Math.PI * 2, 0, Math.PI / 2), M.dial, -2.85, 2.25, 0.27);
+  lens.rotation.x = Math.PI / 2; lens.scale.set(1, 0.28, 1); face.add(lens);
+  const dialLight = new THREE.PointLight(0x9b6bff, 14, 9, 2); dialLight.position.set(-2.85, 2.25, 1.2); face.add(dialLight);
+  face.userData.dialLight = dialLight;
+  // Wordmarks
+  face.add(mesh(new THREE.PlaneGeometry(2.9, 1.02), M.logo, -3.25, 13.05, 0.01));
+  face.add(mesh(new THREE.PlaneGeometry(2.4, 1.03), M.hybrid, 4.05, 1.55, 0.1));
+  face.userData.anchors = { screen: new THREE.Vector3(2.2 + 2.3, 10.6, 0.3), dial: new THREE.Vector3(-2.85 - 1.1, 2.25, 0.3), sensor: new THREE.Vector3(2.25 + 0.7, 13.05, 0.2) };
+}
+
+// Spout: stainless swing arm from the top, down the left side, to an angled nozzle
+const SPOUT_X = -7.3, SPOUT_Z = -1.2;
+const spout = new THREE.Group(); machine.add(spout);
+{
+  const pts = [
+    new THREE.Vector3(0.4, 14.3, SPOUT_Z), new THREE.Vector3(0.4, 15.9, SPOUT_Z),
+    new THREE.Vector3(SPOUT_X, 15.9, SPOUT_Z), new THREE.Vector3(SPOUT_X, 6.5, SPOUT_Z),
+    new THREE.Vector3(SPOUT_X, 6.5, 0.6),
+  ];
+  const path = new THREE.CurvePath();
+  const rad = 0.55;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i], b = pts[i + 1];
+    const dirIn = i > 0 ? b.clone().sub(a).normalize() : null;
+    const start = i > 0 ? a.clone().add(dirIn.clone().multiplyScalar(rad)) : a.clone();
+    const end = i < pts.length - 2 ? b.clone().sub(b.clone().sub(a).normalize().multiplyScalar(rad)) : b.clone();
+    path.add(new THREE.LineCurve3(start, end));
+    if (i < pts.length - 2) {
+      const c = pts[i + 2], dirOut = c.clone().sub(b).normalize();
+      path.add(new THREE.QuadraticBezierCurve3(end, b.clone(), b.clone().add(dirOut.multiplyScalar(rad))));
+    }
+  }
+  spout.add(new THREE.Mesh(new THREE.TubeGeometry(path, 220, 0.2, 20, false), M.chrome));
+  const coup = (x, y, z, len, rx = 0, rz = 0, r = 0.3) => { const m = mesh(new THREE.CylinderGeometry(r, r, len, 24), M.gloss, x, y, z); m.rotation.set(rx, 0, rz); spout.add(m); };
+  coup(0.4, 14.7, SPOUT_Z, 0.9, 0, 0, 0.42);           // base swivel
+  coup(-1.0, 15.9, SPOUT_Z, 1.2, 0, Math.PI / 2);      // top joints
+  coup(SPOUT_X + 0.9, 15.9, SPOUT_Z, 1.0, 0, Math.PI / 2);
+  coup(SPOUT_X, 11.2, SPOUT_Z, 0.8);                   // height adjust collar
+  coup(SPOUT_X, 7.2, SPOUT_Z, 0.6);
+  const tip = mesh(new THREE.CylinderGeometry(0.2, 0.17, 1.0, 20), M.chrome, SPOUT_X, 6.05, 0.75); tip.rotation.x = 0.35; spout.add(tip); spout.userData.tip = tip;
+  coup(SPOUT_X, 6.5, 0.1, 0.5, Math.PI / 2, 0, 0.27);
+}
+const tipEnd = new THREE.Vector3();
+
+// Internals: filters, dual cell, PSU, valve
+const internals = new THREE.Group(); machine.add(internals);
+const filters = [];
+[[-3.6, '1', 'ST · Carbon', '#14a3b8'], [-1.1, '2', 'ND · UF', '#7e5bd6']].forEach(([x, n, w, col], i) => {
+  const f = new THREE.Group(); f.position.set(x, 6.7, 0.5); internals.add(f);
+  f.add(mesh(new THREE.CylinderGeometry(1.05, 1.0, 9.4, 44), M.filter));
+  const lm = new THREE.MeshPhysicalMaterial({ map: labelTex(n, w, col), color: 0xc4c7ce, roughness: 0.55, envMapIntensity: 0.35 });
+  labelMats.push(lm);
+  const lbl = mesh(new THREE.CylinderGeometry(1.06, 1.06, 4.6, 44, 1, true), lm, 0, 0.6, 0); lbl.rotation.y = Math.PI; f.add(lbl);
+  const cap = mesh(new THREE.CylinderGeometry(0.95, 1.05, 0.9, 44), M.cap, 0, 5.1, 0); f.add(cap);
+  for (let k = 0; k < 5; k++) f.add(mesh(new THREE.TorusGeometry(1.04, 0.035, 8, 44), M.cap, 0, -4.2 + k * 0.18, 0).rotateX(Math.PI / 2));
+  f.userData.home = f.position.clone();
+  f.userData.i = i;
+  filters.push(f);
+});
+FILTERS.push(...labelMats);
+
+function makeCell(n, w, h, d, label) {
+  const g = new THREE.Group();
+  const housing = new THREE.Group(); g.add(housing);
+  housing.add(mesh(new RoundedBoxGeometry(w, h, d, 3, 0.16), M.housing));
+  // grid ribs on both faces
+  for (const side of [1, -1]) {
+    for (let r = 0; r < 2; r++) {
+      const cy = (r === 0 ? 1 : -1) * h * 0.22;
+      for (let k = -1; k <= 1; k++) housing.add(mesh(new THREE.BoxGeometry(0.07, h * 0.3, 0.12), M.housing, k * w * 0.22, cy, side * (d / 2 + 0.05)));
+      for (let k = -1; k <= 1; k++) housing.add(mesh(new THREE.BoxGeometry(w * 0.7, 0.07, 0.12), M.housing, 0, cy + k * h * 0.1, side * (d / 2 + 0.05)));
+    }
+    // blue O-ring bolts
+    [[-1, 0.42], [1, 0.42], [-1, 0.12], [1, -0.12], [-1, -0.42], [1, -0.42]].forEach(([sx, sy]) => {
+      const o = mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.1, 20), M.oring, sx * w * 0.36, sy * h, side * (d / 2 + 0.04)); o.rotation.x = Math.PI / 2; housing.add(o);
+    });
+  }
+  // manifolds
+  const mt = mesh(new RoundedBoxGeometry(w * 0.7, 0.8, d * 0.8, 3, 0.15), M.manifold, 0, h / 2 + 0.4, 0); g.add(mt);
+  const mb = mesh(new RoundedBoxGeometry(w * 0.7, 0.8, d * 0.8, 3, 0.15), M.manifold, 0, -h / 2 - 0.4, 0); g.add(mb);
+  [[-0.25, 1], [0.25, 1], [-0.25, -1], [0.25, -1]].forEach(([sx, sy]) => {
+    const p = mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.7, 16), M.manifold, sx * w, sy * (h / 2 + 1.0), 0); g.add(p);
+  });
+  // plates stacked along z
+  const frameShape = rrShape(w * 0.86, h * 0.84, 0.18); frameShape.holes.push(rrShape(w * 0.72, h * 0.74, 0.1));
+  const frameGeo = new THREE.ExtrudeGeometry(frameShape, { depth: 0.05, bevelEnabled: false });
+  const plateGeo = new THREE.PlaneGeometry(w * 0.74, h * 0.76);
+  const plates = [];
+  for (let i = 0; i < n; i++) {
+    const p = new THREE.Group();
+    p.add(mesh(frameGeo, M.frame, 0, 0, -0.025));
+    p.add(new THREE.Mesh(plateGeo, M.plate));
+    g.add(p); plates.push(p);
+  }
+  const membranes = [];
+  for (let i = 0; i < n - 1; i++) { const mm = new THREE.Mesh(plateGeo, M.membrane); g.add(mm); membranes.push(mm); }
+  const baseGap = (d * 0.8) / Math.max(n, 2);
+  g.userData = { housing, plates, membranes, baseGap, n, w, h, d, label };
+  return g;
+}
+const ionCell = makeCell(7, 2.5, 8.2, 2.0, 'ion'); ionCell.position.set(2.2, 7.4, 0.2); internals.add(ionCell);
+const h2Cell = makeCell(2, 1.7, 6.6, 1.3, 'h2'); h2Cell.position.set(4.4, 7.0, -0.4); internals.add(h2Cell);
+ionCell.userData.home = ionCell.position.clone(); h2Cell.userData.home = h2Cell.position.clone();
+ionCell.userData.out = new THREE.Vector3(-1.4, 8.3, 1.2); h2Cell.userData.out = new THREE.Vector3(3.4, 8.1, 1.2);
+
+const misc = new THREE.Group(); internals.add(misc);
+{
+  const psu = mesh(new THREE.BoxGeometry(6.4, 1.5, 2.6), M.psu, -1.6, 12.85, -1.25); misc.add(psu);
+  for (let i = 0; i < 14; i++) misc.add(mesh(new THREE.BoxGeometry(0.06, 0.5, 2.5), M.psu, -4.6 + i * 0.45, 13.85, -1.25));
+  misc.add(mesh(new THREE.BoxGeometry(4.2, 3.2, 0.12), M.pcb, 2.6, 12.6, -2.5));
+  const v = mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.3, 24), M.valve, -0.4, 1.4, -1.6); v.rotation.z = Math.PI / 2; misc.add(v);
+  misc.add(mesh(new THREE.BoxGeometry(0.9, 0.9, 0.9), M.valve, 0.6, 1.4, -1.6));
+}
+
+// Flow path tube with animated dashes
+const flowMat = new THREE.ShaderMaterial({
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  uniforms: { uTime: { value: 0 }, uOn: { value: 0 }, uColor: { value: new THREE.Color(0x4fd1ff) } },
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }`,
+  fragmentShader: `uniform float uTime; uniform float uOn; uniform vec3 uColor; varying vec2 vUv;
+    void main(){ float d = fract(vUv.x * 26. - uTime * 1.2); float dash = smoothstep(0., .15, d) * smoothstep(.6, .3, d);
+      float head = 1. - smoothstep(uOn * 1.15 - .2, uOn * 1.15 - .15, vUv.x);
+      float a = (0.18 + dash * 0.9) * head * step(0.001, uOn);
+      gl_FragColor = vec4(uColor * (1.2 + dash), a); }`,
+});
+const flowCurve = new THREE.CatmullRomCurve3([
+  new THREE.Vector3(0.6, 0.9, -4.6), new THREE.Vector3(0.6, 1.4, -2.0), new THREE.Vector3(-0.4, 1.4, -1.6),
+  new THREE.Vector3(-3.6, 1.6, 0.5), new THREE.Vector3(-3.6, 11.6, 0.5), new THREE.Vector3(-2.35, 12.1, 0.5),
+  new THREE.Vector3(-1.1, 11.6, 0.5), new THREE.Vector3(-1.1, 1.6, 0.5), new THREE.Vector3(1.0, 1.9, 0.3),
+  new THREE.Vector3(2.2, 2.6, 0.2), new THREE.Vector3(2.2, 12.2, 0.2), new THREE.Vector3(0.8, 13.2, -0.8), new THREE.Vector3(0.4, 14.4, -1.2),
+], false, 'centripetal', 0.5);
+const flow = new THREE.Mesh(new THREE.TubeGeometry(flowCurve, 400, 0.11, 10, false), flowMat); flow.renderOrder = 5; machine.add(flow);
+
+// Particles: ions + hydrogen bubbles inside the cells
+function makeParticles(cell, count, kind) {
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3), col = new Float32Array(count * 3), seed = new Float32Array(count * 4);
+  const blue = new THREE.Color(0x4fb8ff), orange = new THREE.Color(0xff8a3d), white = new THREE.Color(0xe6fbff);
+  for (let i = 0; i < count; i++) {
+    const s = kind === 'h2' ? (Math.random() < 0.5 ? 1 : -1) : (i % 2 ? 1 : -1);
+    const bubble = kind === 'h2' || (s > 0 && Math.random() < 0.35);
+    seed[i * 4] = (Math.random() - 0.5) * cell.userData.w * 0.7;
+    seed[i * 4 + 1] = Math.random();
+    seed[i * 4 + 2] = s;
+    seed[i * 4 + 3] = bubble ? 1 : 0;
+    const c = bubble ? white : s > 0 ? blue : orange;
+    col.set([c.r, c.g, c.b], i * 3);
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const mat = new THREE.PointsMaterial({ size: 0.24, map: dotSprite, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 });
+  const pts = new THREE.Points(geo, mat); pts.frustumCulled = false; cell.add(pts);
+  return { pts, seed, count, cell, kind };
+}
+const ionParts = makeParticles(ionCell, 520, 'ion');
+const h2Parts = makeParticles(h2Cell, 220, 'h2');
+function updateParticles(P, t, fan) {
+  const { seed, count, cell } = P, ud = cell.userData, arr = P.pts.geometry.attributes.position.array;
+  const half = ((ud.n - 1) / 2) * ud.baseGap * (1 + fan * 2.0) + 0.15;
+  for (let i = 0; i < count; i++) {
+    const x0 = seed[i * 4], r = seed[i * 4 + 1], s = seed[i * 4 + 2], bub = seed[i * 4 + 3];
+    let x, y, z;
+    if (bub) {
+      const f = (t * (0.18 + r * 0.14) + r * 7.3) % 1;
+      y = (f - 0.5) * ud.h * 0.78; x = x0 + Math.sin(t * 3 + r * 40) * 0.06;
+      z = s * (0.2 + ((r * 13.7) % 1) * 0.8) * half;
+    } else {
+      const f = (t * (0.25 + r * 0.2) + r * 5.1) % 1;
+      z = s * (0.04 + f * 0.96) * half;
+      y = (((r * 91.7) % 1) - 0.5) * ud.h * 0.74 + Math.sin(t * 2 + r * 30) * 0.08; x = x0;
+    }
+    arr[i * 3] = x; arr[i * 3 + 1] = y; arr[i * 3 + 2] = z;
+  }
+  P.pts.geometry.attributes.position.needsUpdate = true;
+}
+
+// Glass, water, pour stream
+const cup = new THREE.Group(); cup.position.set(SPOUT_X, 0, 0.92); root.add(cup);
+{
+  const prof = [[0, 0], [1.0, 0], [1.08, 0.08], [1.2, 4.4], [1.14, 4.4], [1.02, 0.32], [0, 0.32]].map(([x, y]) => new THREE.Vector2(x, y));
+  cup.add(new THREE.Mesh(new THREE.LatheGeometry(prof, 64), M.glass));
+  // crisp rim + base edge so it still reads as a glass when nearly invisible
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(1.17, 0.025, 8, 64), M.glassRim); rim.rotation.x = Math.PI / 2; rim.position.y = 4.4; cup.add(rim);
+  const base = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.03, 8, 64), M.glassRim); base.rotation.x = Math.PI / 2; base.position.y = 0.05; cup.add(base);
+}
+const water = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.0, 1, 48).translate(0, 0.5, 0), M.water);
+water.position.y = 0.33; cup.add(water);
+// meniscus: a faint bright ring/disc on the water surface sells "clear liquid" far better than an opaque fill
+const waterTop = new THREE.Mesh(new THREE.CircleGeometry(1.08, 48), M.waterTop); waterTop.rotation.x = -Math.PI / 2; cup.add(waterTop);
+const stream = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.1, 1, 12).translate(0, -0.5, 0), M.stream);
+root.add(stream);
+
+/* -------------------------------------------------------- scroll state */
+// One value per phase: 0 Hero · 1 Control · 2 Inlet · 3 Filtration · 4 Dual cell · 5 Electrolysis · 6 Dispense · 7 Smart care · 8 CTA
+const S = {
+  ext:     [1, 1, 0.14, 1, 0, 0, 1, 1, 1],
+  door:    [0, 0, 0, 1, 1, 0.6, 0, 0, 0],
+  explode: [0, 0, 0, 0, 1, 1, 0, 0, 0],
+  fOut:    [0, 0, 0, 1, 1, 1, 0, 0, 0],
+  fAlpha:  [1, 1, 1, 1, 0, 0, 1, 1, 1],
+  cells:   [0, 0, 0, 0, 1, 1, 0, 0, 0],
+  house:   [1, 1, 1, 1, 1, 0.12, 1, 1, 1],
+  fan:     [0, 0, 0, 0, 0, 1, 0, 0, 0],
+  cellRot: [0, 0, 0, 0, 0, 1, 0, 0, 0],
+  ions:    [0, 0, 0, 0, 0.25, 1, 0, 0, 0],
+  misc:    [1, 1, 1, 1, 0, 0, 1, 1, 1],
+  flow:    [0, 0, 1, 1, 0, 0, 1, 0, 0],
+  cup:     [0, 0, 0, 0, 0, 0, 1, 1, 0.9],
+  rotY:    [0.48, 0.12, 0.62, -0.32, 0, 0, 0.55, -0.55, 0.42],
+};
+// Camera keyframes [pos, target]
+const CAM = [
+  [[-7, 12, 40], [-0.6, 7.6, 0]],
+  [[-3.5, 9, 34], [0.4, 7.4, 2.4]],
+  [[-6, 17, 38], [-0.8, 7.2, 0]],
+  [[-13, 11.5, 41], [-1.6, 7.0, 3.2]],
+  [[0, 11, 40], [0.6, 8.2, 0.8]],
+  [[5, 11, 34], [1.0, 8.0, 0.6]],
+  [[-17, 9, 31], [-4.2, 6.2, 0.6]],
+  [[16, 13, 39], [-0.9, 7.4, 0]],
+  [[-6, 10, 41], [-1.2, 7.6, 0]],
+];
+const ease = (x) => x * x * (3 - 2 * x);
+const clamp01 = (x) => Math.min(1, Math.max(0, x));
+function seg(p) { const i = Math.min(PHASES - 2, Math.floor(p)); const f = ease(clamp01(p - i)); return [i, f]; }
+const val = (key, p) => { const [i, f] = seg(p); const a = S[key]; return a[i] + (a[i + 1] - a[i]) * f; };
+
+/* --------------------------------------------------------- HTML wiring */
+const cards = [...document.querySelectorAll('.card')];
+const rail = document.getElementById('rail');
+const progressEl = document.getElementById('progress');
+const hint = document.getElementById('hint');
+cards.forEach((c, i) => {
+  const b = document.createElement('button'); b.innerHTML = `<span>${c.dataset.name}</span><i></i>`;
+  b.setAttribute('aria-label', `Go to ${c.dataset.name}`);
+  b.onclick = () => goTo(i);
+  rail.appendChild(b);
+});
+const railBtns = [...rail.children];
+
+
+// 3D-anchored callouts
+const labelsEl = document.getElementById('labels');
+const TAGS = [
+  { phase: 1, text: '4.3" touchscreen', sub: 'Color-coded modes', obj: face, at: () => face.userData.anchors.screen },
+  { phase: 1, text: 'Jog dial', sub: 'Glows in the mode color', obj: face, at: () => new THREE.Vector3(-2.85 + 1.1, 2.25, 0.3) },
+  { phase: 2, text: 'Inlet & flow sensor', sub: 'Stops if supply drops', obj: machine, at: () => new THREE.Vector3(0.6, 1.4, -1.6) },
+  { phase: 2, text: 'Temperature guard', sub: 'Blocks hot water', obj: machine, at: () => new THREE.Vector3(-0.4, 1.4, -1.6), left: true },
+  { phase: 3, text: '1st · Carbon', sub: 'Chlorine, VOCs, odor', obj: filters[0], at: () => new THREE.Vector3(0.6, -1.2, 1.0) },
+  { phase: 3, text: '2nd · UF membrane', sub: 'Particles & bacteria', obj: filters[1], at: () => new THREE.Vector3(1.1, 2, 0) },
+  { phase: 4, text: 'Ionizing cell', sub: 'Sets the pH', obj: ionCell, at: () => new THREE.Vector3(-1.4, 2.6, 0), left: true },
+  { phase: 4, text: 'Hydrogen Booster Cell', sub: 'H₂ without changing pH', obj: h2Cell, at: () => new THREE.Vector3(1.0, 2.2, 0) },
+  { phase: 5, text: 'Cathode side · OH⁻', sub: 'Alkaline, H₂-rich', obj: ionCell, at: () => new THREE.Vector3(-0.9, 2.8, ionCell.userData.half || 1), left: true },
+  { phase: 5, text: 'Anode side · H⁺', sub: 'Acidic → drain', obj: ionCell, at: () => new THREE.Vector3(-0.9, -2.8, -(ionCell.userData.half || 1)), left: true, acid: true },
+  { phase: 5, text: 'Platinum-titanium mesh', sub: 'Perforated plates', obj: ionCell, at: () => new THREE.Vector3(0.9, 1.6, 0) },
+  { phase: 5, text: 'H₂ bubbles', sub: 'Dedicated booster cell', obj: h2Cell, at: () => new THREE.Vector3(0.7, -1.8, 0) },
+  { phase: 6, text: 'Proximity sensor', sub: 'Pour hands-free', obj: face, at: () => face.userData.anchors.sensor },
+  { phase: 6, text: 'Preset volume', sub: 'Auto shutoff', obj: cup, at: () => new THREE.Vector3(-1.2, 2.6, 0), left: true },
+];
+TAGS.forEach(t => {
+  const el = document.createElement('div'); el.className = 'tag' + (t.left ? ' left' : '') + (t.acid ? ' acid' : '');
+  el.innerHTML = `<i></i><span>${t.text}<small>${t.sub}</small></span>`; labelsEl.appendChild(el); t.el = el;
+});
+const tmpV = new THREE.Vector3();
+
+/* --------------------------------------------------------------- render */
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), 0.5, 0.6, 0.9);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+let mobile = false;
+function resize() {
+  const w = Math.max(1, innerWidth), h = Math.max(1, innerHeight); mobile = w < 760;
+  renderer.setSize(w, h, false); composer.setSize(w, h);
+  bloom.resolution.set(w / 2, h / 2);
+  camera.aspect = w / h;
+  // shift the subject away from the copy: right on desktop, up on mobile
+  if (mobile) camera.setViewOffset(w, h, 0, h * 0.1, w, h); else camera.setViewOffset(w, h, -w * 0.17, 0, w, h);
+  camera.fov = mobile ? 44 : 32;
+  camera.updateProjectionMatrix();
+  fitBackground();
+}
+addEventListener('resize', resize); resize();
+
+/* ------------------------------------------------- snap-to-phase stepper */
+// The page never scrolls natively. Each gesture plays exactly one phase transition and rests on the keyframe.
+const STEP_MS = 1400;
+let p = 0, from = 0, to = 0, tStart = 0, tDur = 1, animating = false, queued = 0, last = performance.now(), started = false;
+let waterFill = 0, phaseArrivedAt = 0;
+{ const m = location.hash.match(/^#([0-8])$/); if (m) p = from = to = Math.min(PHASES - 1, +m[1]); }
+function goTo(k) {
+  k = Math.max(0, Math.min(PHASES - 1, k));
+  collapseSheets();
+  if (k === to && !animating) return;
+  from = p; to = k; tStart = performance.now();
+  const steps = Math.max(1, Math.abs(to - from));
+  tDur = matchMedia('(prefers-reduced-motion: reduce)').matches ? 300 : Math.min(3400, STEP_MS + (steps - 1) * 500);
+  animating = true; queued = 0;
+  try { history.replaceState(null, '', k ? '#' + k : location.pathname + location.search); } catch {}
+}
+const step = (d) => { if (animating) queued = d; else goTo(to + d); };
+const introSwallow = () => performance.now() - introEndedAt < 700;
+let lastWheelT = 0, wheelArmed = true, wheelAcc = 0;
+addEventListener('wheel', (e) => {
+  if (e.cancelable) e.preventDefault();
+  const now = performance.now(), gap = now - lastWheelT; lastWheelT = now;
+  if (introActive || introSwallow()) { wheelArmed = false; return; }
+  if (gap > 220) { wheelArmed = true; wheelAcc = 0; }      // a fresh gesture (trackpad inertia keeps gaps short)
+  if (!wheelArmed) return;
+  wheelAcc += e.deltaY;
+  if (Math.abs(wheelAcc) > 24) { wheelArmed = false; step(Math.sign(wheelAcc)); }
+}, { passive: false });
+let touchY = null, touchT = 0;
+addEventListener('touchstart', (e) => { touchY = e.touches[0].clientY; touchT = performance.now(); }, { passive: true });
+addEventListener('touchmove', (e) => { if (e.cancelable && !e.target.closest('.scrollable')) e.preventDefault(); }, { passive: false });
+addEventListener('touchend', (e) => {
+  if (touchY == null || introActive || introSwallow() || e.target.closest('.card.open')) { touchY = null; return; }
+  const dy = touchY - e.changedTouches[0].clientY; touchY = null;
+  if (Math.abs(dy) > 40 && performance.now() - touchT < 900) step(Math.sign(dy));
+});
+addEventListener('keydown', (e) => {
+  if (introActive || introSwallow() || e.altKey || e.ctrlKey || e.metaKey) return;
+  const k = e.key;
+  if (k === ' ' && e.target.closest('a, button')) return;
+  let d = 0;
+  if (k === 'ArrowDown' || k === 'PageDown' || (k === ' ' && !e.shiftKey)) d = 1;
+  else if (k === 'ArrowUp' || k === 'PageUp' || (k === ' ' && e.shiftKey)) d = -1;
+  else if (k === 'Home') { e.preventDefault(); goTo(0); return; }
+  else if (k === 'End') { e.preventDefault(); goTo(PHASES - 1); return; }
+  if (d) { e.preventDefault(); step(d); }
+});
+hint.onclick = () => step(1);
+// Mobile peek sheet: collapsed shows the headline; Details (or tapping the bar) expands; tapping the scene collapses
+function setSheet(c, open) {
+  c.classList.toggle('open', open); c.classList.toggle('scrollable', open);
+  const b = c.querySelector('.more'); b.setAttribute('aria-expanded', String(open)); b.firstChild.textContent = open ? 'Close' : 'Details';
+  if (!open) c.scrollTop = 0;
+}
+function collapseSheets() { cards.forEach(c => c.classList.contains('open') && setSheet(c, false)); }
+cards.forEach(c => {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'more'; b.setAttribute('aria-expanded', 'false');
+  b.innerHTML = '<span>Details</span><i></i>';
+  b.addEventListener('click', (e) => { e.stopPropagation(); setSheet(c, !c.classList.contains('open')); });
+  c.appendChild(b);
+  c.addEventListener('click', (e) => { if (mobile && !c.classList.contains('open') && !e.target.closest('a, button')) setSheet(c, true); });
+});
+addEventListener('click', (e) => { if (!e.target.closest('.card')) collapseSheets(); });
+addEventListener('hashchange', () => { const m = location.hash.match(/^#(\d)$/); goTo(m ? +m[1] : 0); });
+window.__goto = (k) => { p = from = to = k; animating = false; };   // review/debug helper
+
+const camPos = new THREE.Vector3(), camTgt = new THREE.Vector3(), a = new THREE.Vector3(), b = new THREE.Vector3();
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const t = now / 1000;
+  if (animating) {
+    const u = clamp01((now - tStart) / tDur);
+    p = from + (to - from) * u;
+    if (u >= 1) { p = to; animating = false; phaseArrivedAt = now; if (queued) { const d = queued; queued = 0; goTo(to + d); } }
+  }
+  const [i, f] = seg(p);
+
+  // camera
+  a.fromArray(CAM[i][0]).lerp(b.fromArray(CAM[i + 1][0]), f); camPos.copy(a);
+  a.fromArray(CAM[i][1]).lerp(b.fromArray(CAM[i + 1][1]), f); camTgt.copy(a);
+  if (!reduce) { camPos.x += Math.sin(t * 0.25) * 0.6; camPos.y += Math.sin(t * 0.33) * 0.3; }
+  if (mobile) camPos.multiplyScalar(1.0).add(new THREE.Vector3(0, 0, 6));
+  camera.position.copy(camPos); camera.lookAt(camTgt);
+
+  // machine pose
+  const near = Math.round(p);
+  let rot = val('rotY', p);
+  if (!reduce) rot += Math.sin(t * 0.3) * 0.06 * (1 - val('cells', p));
+  root.rotation.y = rot;
+
+  const ext = val('ext', p), explode = val('explode', p);
+  setOpacity(EXTERIOR, ext);
+  body.position.z = -explode * 10; body.position.y = explode * 1.5;
+  doorPivot.rotation.y = val('door', p) * 1.85;
+  doorPivot.position.x = W / 2 + explode * 6;
+  spout.position.y = explode * 6;
+
+  const fOut = val('fOut', p);
+  filters.forEach((fl, k) => {
+    const d = clamp01(fOut * 1.4 - k * 0.4);
+    fl.position.set(fl.userData.home.x - explode * 5, fl.userData.home.y + Math.sin(d * Math.PI) * 0.6, fl.userData.home.z + d * 5.2);
+    fl.rotation.y = d * (k ? -0.6 : 0.5);
+  });
+  setOpacity(FILTERS, val('fAlpha', p));
+  setOpacity(MISC, val('misc', p));
+
+  const cellsK = val('cells', p), fan = val('fan', p), cr = val('cellRot', p);
+  for (const c of [ionCell, h2Cell]) {
+    c.position.lerpVectors(c.userData.home, c.userData.out, cellsK);
+    c.scale.setScalar(1 + cellsK * 0.18);
+    c.rotation.y = -cr * 0.62;
+    if (c === h2Cell) c.position.x += fan * 1.6;
+    const ud = c.userData, gap = ud.baseGap * (1 + fan * 2.0);
+    ud.half = ((ud.n - 1) / 2) * gap;
+    ud.plates.forEach((pl, k) => { pl.position.z = (k - (ud.n - 1) / 2) * gap; });
+    ud.membranes.forEach((mm, k) => { mm.position.z = (k + 0.5 - (ud.n - 1) / 2) * gap; });
+  }
+  setOpacity(HOUSING, val('house', p));
+  M.membrane.opacity = fan * 0.16;
+  const ions = val('ions', p);
+  ionParts.pts.material.opacity = ions; h2Parts.pts.material.opacity = Math.max(ions, cellsK * 0.6);
+  if (ions > 0.01 || cellsK > 0.01) { updateParticles(ionParts, t, fan); updateParticles(h2Parts, t, fan); }
+  ionParts.pts.visible = ions > 0.01; h2Parts.pts.visible = h2Parts.pts.material.opacity > 0.01;
+
+  flowMat.uniforms.uTime.value = t;
+  const fl = val('flow', p);
+  flowMat.uniforms.uOn.value = fl;
+  flow.visible = fl > 0.01;
+
+  // modes: cycle in Control phase; H2 while dispensing; ALK 3 otherwise
+  let mi = 0;
+  if (p > 0.6 && p < 1.4) mi = Math.floor(t / 1.6) % MODES.length;   // resting on Control: cycle the modes
+  if (p > 5.6 && p < 6.8) mi = 1;
+  drawScreen(mi);
+  const mc = new THREE.Color(MODES[mi].color);
+  M.dial.emissive.lerp(mc, 0.12); face.userData.dialLight.color.lerp(mc, 0.12);
+  M.dial.emissiveIntensity = 2.2 + Math.sin(t * 2.2) * 0.4;
+
+  // cup + pour
+  const cupA = val('cup', p);
+  setOpacity([M.glass, M.glassRim, M.water, M.waterTop], cupA); cup.visible = cupA > 0.01;
+  // glass fills over time while resting on Dispense; empty before it, full after it
+  if (p < 5.6) waterFill = 0;
+  else if (p > 6.4) waterFill = 1;
+  else if (!animating) waterFill = Math.min(1, waterFill + dt / 3.2);
+  const fill = waterFill;
+  water.scale.y = Math.max(0.001, fill * 3.6); water.visible = fill > 0.002 && cupA > 0.01;
+  waterTop.position.y = 0.34 + fill * 3.6; waterTop.visible = water.visible;
+  waterTop.scale.setScalar(1 + fill * 0.08);   // glass flares slightly toward the rim
+  // nozzle opening = bottom centre of the angled tip, in root space; the glass sits right under it
+  root.updateMatrixWorld();
+  tipEnd.set(0, -0.5, 0); spout.userData.tip.localToWorld(tipEnd); root.worldToLocal(tipEnd);
+  cup.position.x = tipEnd.x; cup.position.z = tipEnd.z;
+  const pouring = p > 5.85 && p < 6.4 && fill < 1 && cupA > 0.3;
+  stream.visible = pouring;
+  if (pouring) {
+    root.updateMatrixWorld();
+    const top = 0.33 + fill * 3.6;
+    stream.position.copy(tipEnd); stream.scale.y = Math.max(0.01, tipEnd.y - top);
+    stream.scale.x = stream.scale.z = 1 + Math.sin(t * 30) * 0.08;
+  }
+
+  // HTML: cards, rail, progress, tags
+  cards.forEach((c, k) => {
+    const d = Math.abs(p - k);
+    const o = 1 - ease(clamp01((d - 0.12) / 0.26));
+    c.style.opacity = o.toFixed(3);
+    c.style.transform = mobile ? `translateY(${Math.abs(p - k) * 60}px)` : `translateY(calc(-50% + ${(p - k) * -60}px))`;
+    c.classList.toggle('live', o > 0.5);
+  });
+  railBtns.forEach((bt, k) => bt.classList.toggle('on', k === near));
+  progressEl.style.width = `${(p / (PHASES - 1)) * 100}%`;
+  hint.style.opacity = String(1 - clamp01(p / 0.3));
+
+  scene.updateMatrixWorld();
+  const vw = innerWidth, vh = innerHeight;
+  const shown = [];
+  for (const tg of TAGS) {
+    const d = Math.abs(p - tg.phase);
+    const o = 1 - ease(clamp01((d - 0.08) / 0.22));
+    if (o <= 0.01) { if (tg.el.style.opacity !== '0') tg.el.style.opacity = '0'; continue; }
+    tmpV.copy(tg.at()); tg.obj.localToWorld(tmpV); tmpV.project(camera);
+    const x = (tmpV.x * 0.5 + 0.5) * vw, y = (-tmpV.y * 0.5 + 0.5) * vh;
+    const w = tg.el.offsetWidth, h = tg.el.offsetHeight;
+    // keep on screen horizontally; centre vertically on the anchor
+    const lx = Math.max(6, Math.min(vw - w - 6, tg.left ? x - w + 5 : x - 5));
+    shown.push({ tg, o, x: lx, y: y - h / 2, w, h });
+  }
+  // de-overlap: walk top-to-bottom and push any colliding callout below the one it hits
+  shown.sort((a, b) => a.y - b.y);
+  const GAP = 6;
+  for (let i = 0; i < shown.length; i++) {
+    const r = shown[i];
+    for (let pass = 0; pass < 3; pass++) {
+      let moved = false;
+      for (let j = 0; j < i; j++) {
+        const q = shown[j];
+        if (r.x < q.x + q.w + GAP && r.x + r.w + GAP > q.x && r.y < q.y + q.h + GAP && r.y + r.h + GAP > q.y) { r.y = q.y + q.h + GAP; moved = true; }
+      }
+      if (!moved) break;
+    }
+  }
+  for (const r of shown) { r.tg.el.style.opacity = r.o.toFixed(3); r.tg.el.style.transform = `translate(${r.x}px, ${r.y}px)`; }
+
+  if (!introActive || !started) composer.render();
+  if (!started) { started = true; requestAnimationFrame(() => document.getElementById('poster').classList.add('gone')); }
+  requestAnimationFrame(frame);
+}
+document.fonts.ready.then(() => { screenMode = -1; drawScreen(0); requestAnimationFrame(frame); });
+</script>
+</body>
+</html>
